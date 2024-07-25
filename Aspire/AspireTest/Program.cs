@@ -32,20 +32,23 @@ var summaries = new[]
 };
 
 app.MapGet("/", () =>
-{
+{    
     return "Hello there!";
 });
 
-app.MapGet("/weatherforecast", () =>
+app.MapGet("/weatherforecast", (string city, int days, ILogger<Program> _logger) =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
+    _logger.LogInformation("Entered into controller");
+    var forecast =  Enumerable.Range(1, days).Select(index =>
         new WeatherForecast
         (
+            city,
             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
             Random.Shared.Next(-20, 55),
             summaries[Random.Shared.Next(summaries.Length)]
         ))
         .ToArray();
+    _logger.LogInformation("Retrived {WeatherCount} weather forcasts for {City}", forecast, city);
     return forecast;
 })
 .WithName("GetWeatherForecast")
@@ -53,7 +56,7 @@ app.MapGet("/weatherforecast", () =>
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+record WeatherForecast(string city, DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
